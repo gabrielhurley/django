@@ -157,6 +157,9 @@ class SafeExceptionReporterFilter(ExceptionReporterFilter):
         """
         func_name = tb_frame.f_code.co_name
         func = tb_frame.f_globals.get(func_name)
+        # Methods won't be in the global namespace, func could be None here...
+        if func is None and "self" in tb_frame.f_locals:
+            func = getattr(tb_frame.f_locals.get('self'), func_name, None)
         sensitive_variables = getattr(func, 'sensitive_variables', [])
         cleansed = []
         if self.is_active(request) and sensitive_variables:
